@@ -8,35 +8,45 @@ const LoadDB=async()=>{
 }
 LoadDB()
 
+//get all blog
 export async function GET(request) {
-  console.log("Blog GET Hit");
-  return NextResponse.json({ msg: "API Working" });
+  return NextResponse.json({msg:"API working"})
 }
 
+
+//upload the blog
 export async function POST(request) {
-  const formData=await request.formdata()
-  const timestamp=Date.now()
+  try {
+    
 
-  const image=formData.get('image')
-  const imageByteDate=await image.arrayBuffer()
-  const buffer =Buffer.from(imageByteDate)
-  const path=`./public/${timestamp}_${image.name}`
-  await writeFile(path,buffer)
-  const imgUrl=`/${timestamp}_${image.name}`
+    // ✅ Corrected method name
+    const formData = await request.formData();
+    const timestamp = Date.now();
 
-  const blogData={
-    title:`${formData.get('title')}`,
-    description:`${formData.get('description')}`,
-    category:`${formData.get('category')}`,
-    author:`${formData.get('author')}`,
-    image:`${imgUrl}`,
-    authorImg:`${formData.get('authorImg')}`
+    const image = formData.get("image");
+    const imageByteData = await image.arrayBuffer();
+    const buffer = Buffer.from(imageByteData);
+
+    const path = `./public/${timestamp}_${image.name}`;
+    await writeFile(path, buffer);
+    const imgUrl = `/${timestamp}_${image.name}`;
+
+    const blogData = {
+      title: formData.get("title"),
+      description: formData.get("description"),
+      category: formData.get("category"),
+      author: formData.get("author"),
+      image: imgUrl,
+      authorImg: formData.get("authorImg"),
+    };
+
+    await BlogModel.create(blogData);
+    console.log("✅ Blog Saved");
+    console.log("🖼️ Image URL:", imgUrl);
+
+    return NextResponse.json({ success: true, msg: "Blog Added" });
+  } catch (error) {
+    console.error("❌ Error adding blog:", error);
+    return NextResponse.json({ success: false, msg: "Error adding blog", error: error.message });
   }
-
-  await BlogModel.create(blogData)
-  console.log("Blog Saved ");
-  
-  console.log(imgUrl);
-  return NextResponse.json({success:true,msg:"Blog Added"})
-  
 }
