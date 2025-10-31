@@ -10,7 +10,22 @@ LoadDB()
 
 //get all blog
 export async function GET(request) {
-  return NextResponse.json({msg:"API working"})
+  try {
+    
+   
+
+    // Fetch all blogs
+    const blogs = await BlogModel.find().sort({ createdAt: -1 });
+
+    // Return as JSON
+    return NextResponse.json({ success: true, blogs });
+  } catch (error) {
+    console.error("❌ Error fetching blogs:", error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch blogs", error: error.message },
+      { status: 500 }
+    );
+  }
 }
 
 

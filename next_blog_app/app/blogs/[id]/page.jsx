@@ -11,9 +11,9 @@ const page = ({params}) => {
   // ✅ unwrap params (Next.js 15 / React 19)
   const { id } = React.use(params)
 
-  // ✅ function to fetch the blog data
+ 
   const fetchBlogData = () => {
-    // convert id to number if needed
+   
     const blogId = Number(id)
     const blog = blog_data.find(item => item.id === blogId)
 
