@@ -1,33 +1,35 @@
 'use client'
-import { assets, blog_data } from '@/Assets/assets'
+import { assets} from '@/Assets/assets'
 import Fooder from '@/Components/Fooder'
+import axios from 'axios'
 import Image from 'next/image'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
+import { useParams } from "next/navigation";
 
-const page = ({params}) => {
-    const [data, setData] = useState(null)
+const page = () => {
+   const [data, setData] = useState(null);
+  const { id } = useParams(); // ✅ get dynamic route parameter
 
-  // ✅ unwrap params (Next.js 15 / React 19)
-  const { id } = React.use(params)
+  const fetchBlogData = async () => {
+    try {
+      const response = await axios.get("/api/blog", {
+        params: { id }, // ✅ use the id from useParams
+      });
 
- 
-  const fetchBlogData = () => {
-   
-    const blogId = Number(id)
-    const blog = blog_data.find(item => item.id === blogId)
-
-    if (blog) {
-      setData(blog)
-      console.log('Fetched blog:', blog)
-    } else {
-      console.warn('Blog not found for id:', blogId)
+      if (response.data.success) {
+        setData(response.data.blog);
+      } else {
+        console.error("Blog not found");
+      }
+    } catch (error) {
+      console.error("Error fetching blog:", error);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchBlogData()
-  }, [])
+    if (id) fetchBlogData(); // ✅ fetch only if id exists
+  }, [id]);
 
   return (data?<>
     <div className='bg-gray-200 py-5 px-5 md:px-12 lg:px-28'>
@@ -43,7 +45,7 @@ const page = ({params}) => {
       <div className='text-center my-24'>
         <h1 className='text-2xl sm:text-5xl font-semibold max-w-[700px]
         mx-auto'>{data.title}</h1>
-        <Image src={data.author_img} width={60} height={60} alt=''
+        <Image src={assets.profile_icon} width={60} height={60} alt=''
         className='mx-auto mt-6 border border-white rounded-full '/>
         <p className='mt-1 pd-2 text-lg max-w-[740px] mx-auto'>{data.author}</p>
       </div>

@@ -11,14 +11,24 @@ LoadDB()
 //get all blog
 export async function GET(request) {
   try {
+    const blogId = request.nextUrl.searchParams.get("id");
+
+    if (blogId) {
+      // Fetch one blog by ID
+      const blog = await BlogModel.findById(blogId);
+      if (!blog) {
+        return NextResponse.json(
+          { success: false, message: "Blog not found" },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ success: true, blog });
+    }
+
     
-   
-
-    // Fetch all blogs
     const blogs = await BlogModel.find().sort({ createdAt: -1 });
-
-    // Return as JSON
     return NextResponse.json({ success: true, blogs });
+    
   } catch (error) {
     console.error("❌ Error fetching blogs:", error);
     return NextResponse.json(
