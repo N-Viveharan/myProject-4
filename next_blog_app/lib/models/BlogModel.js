@@ -1,36 +1,36 @@
 import mongoose from "mongoose";
 
-const Schema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
+const BlogSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: String,
+      required: true,
+    },
+    author: {
+      type: String,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    date: {
+      type: Date,
+      default: Date.now, // ✅ Use function reference (not Date.now())
+    },
   },
-  description: {
-    type: String,
-    required: true,
-  },
-  category: {
-    type: String,
-    required: true,
-  },
-  author: {
-    type: String,
-    required: true,
-  },
-  image: {
-    type: String,
-    required: true,
-  },
-  authorImg: {
-    type: String,
-    required: true,
-  },
-  date: {
-    type: Date,
-    default: Date.now(),
-  }, 
-});
+  { timestamps: true } // adds createdAt and updatedAt automatically
+);
 
-const BlogModel=mongoose.model.blog||mongoose.model('blog',Schema)
+// ✅ Prevent OverwriteModelError in Next.js
+const BlogModel = mongoose.models.blog || mongoose.model("blog", BlogSchema);
 
-export default BlogModel
+export default BlogModel;

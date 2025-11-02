@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import {writeFile} from 'fs/promises'
 import { log } from "console";
 import BlogModel from "@/lib/models/BlogModel";
+import fs from "fs";
+
 const LoadDB=async()=>{
   await ConnectDB( )
 }
@@ -73,5 +75,38 @@ export async function POST(request) {
   } catch (error) {
     console.error("❌ Error adding blog:", error);
     return NextResponse.json({ success: false, msg: "Error adding blog", error: error.message });
+  }
+}
+
+//create api nendpoint to delete blog
+
+export async function DELETE(request) {
+  
+
+  try {
+    const id = request.nextUrl.searchParams.get("id");
+    const blog = await BlogModel.findById(id);
+
+    if (!blog) {
+      return NextResponse.json({ msg: "Blog not found" }, { status: 404 });
+    }
+
+    //  Safely delete image if it exists
+    if (blog.image) {
+      const imagePath = `./public${blog.image}`;
+      fs.unlink(imagePath, (err) => {
+        if (err) {
+          console.error("Error deleting image file:", err);
+        }
+      });
+    }
+
+    //  Delete blog document
+    await BlogModel.findByIdAndDelete(id);
+
+    return NextResponse.json({ msg: "Blog Deleted Successfully" });
+  } catch (error) {
+    console.error("DELETE error:", error);
+    return NextResponse.json({ msg: "Internal Server Error" }, { status: 500 });
   }
 }
