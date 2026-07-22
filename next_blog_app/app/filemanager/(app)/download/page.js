@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import TopBar from '../../_components/TopBar';
@@ -11,7 +11,7 @@ const RECENT_HISTORY = [
   { id: 'h3', name: 'Marketing_Assets.zip', folder: 'Marketing Assets', size: 26500000, downloadedAt: '2026-07-18' },
 ];
 
-export default function DownloadPage() {
+function DownloadPageInner() {
   const { folders, getFolderById } = useFileManager();
   const searchParams = useSearchParams();
 
@@ -223,5 +223,13 @@ export default function DownloadPage() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function DownloadPage() {
+  return (
+    <Suspense fallback={null}>
+      <DownloadPageInner />
+    </Suspense>
   );
 }

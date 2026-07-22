@@ -31,24 +31,49 @@ export default function UploadPage() {
   async function uploadAll() {
     if (!selectedFolder || fileQueue.length === 0) return;
 
-    // Simulate upload with progress
-    for (const item of fileQueue) {
-      if (item.state !== UPLOAD_STATES.pending) continue;
+    const pending = fileQueue.filter((f) => f.state === UPLOAD_STATES.pending);
 
-      setFileQueue(q => q.map(f => f.id === item.id ? { ...f, state: UPLOAD_STATES.uploading } : f));
+    // Mark all pending as uploading
+    setFileQueue((q) =>
+      q.map((f) =>
+        f.state === UPLOAD_STATES.pending ? { ...f, state: UPLOAD_STATES.uploading, progress: 0 } : f
+      )
+    );
 
-      // Animate progress
-      for (let p = 0; p <= 100; p += 20) {
-        await new Promise(r => setTimeout(r, 150));
-        setFileQueue(q => q.map(f => f.id === item.id ? { ...f, progress: p } : f));
-      }
+    try {
+      // Animate progress while upload runs
+      const progressInterval = setInterval(() => {
+        setFileQueue((q) =>
+          q.map((f) =>
+            f.state === UPLOAD_STATES.uploading && f.progress < 85
+              ? { ...f, progress: f.progress + 15 }
+              : f
+          )
+        );
+      }, 200);
 
-      setFileQueue(q => q.map(f => f.id === item.id ? { ...f, state: UPLOAD_STATES.done, progress: 100 } : f));
+      const rawFiles = pending.map((item) => item.file);
+      await uploadFiles(selectedFolder, rawFiles);
+
+      clearInterval(progressInterval);
+
+      setFileQueue((q) =>
+        q.map((f) =>
+          f.state === UPLOAD_STATES.uploading
+            ? { ...f, state: UPLOAD_STATES.done, progress: 100 }
+            : f
+        )
+      );
+    } catch (err) {
+      console.error('Upload failed:', err);
+      setFileQueue((q) =>
+        q.map((f) =>
+          f.state === UPLOAD_STATES.uploading
+            ? { ...f, state: UPLOAD_STATES.error, progress: 0 }
+            : f
+        )
+      );
     }
-
-    // Save to context
-    const doneFiles = fileQueue.map(item => item.file);
-    uploadFiles(selectedFolder, doneFiles);
   }
 
   function clearDone() {

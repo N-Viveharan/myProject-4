@@ -32,9 +32,14 @@ function NavItem({ href, icon, label, badge, onClick }) {
 }
 
 export default function Sidebar() {
-  const { user, folders, totalFiles } = useFileManager();
+  const { user, folders, totalFiles, logout, loading } = useFileManager();
 
-  const storagePercent = Math.round((user.storageUsed / user.storageTotal) * 100);
+  // Don't render while bootstrapping auth
+  if (loading || !user) return null;
+
+  const storagePercent = Math.min(100, Math.round((user.storageUsed / user.storageTotal) * 100));
+  const initials = user.initials ||
+    user.name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
 
   return (
     <aside className="fm-sidebar">
@@ -118,11 +123,22 @@ export default function Sidebar() {
         </div>
 
         <div className="fm-sidebar-user">
-          <div className="fm-sidebar-avatar">{user.initials}</div>
+          <div className="fm-sidebar-avatar">{initials}</div>
           <div className="fm-sidebar-user-info">
             <div className="fm-sidebar-user-name">{user.name}</div>
             <div className="fm-sidebar-user-email">{user.role}</div>
           </div>
+          <button
+            onClick={logout}
+            title="Log out"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', padding: '4px', marginLeft: 'auto', flexShrink: 0, display: 'flex', alignItems: 'center' }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
         </div>
       </div>
     </aside>

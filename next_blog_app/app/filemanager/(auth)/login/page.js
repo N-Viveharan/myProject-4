@@ -2,11 +2,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useFileManager } from '../../_context/FileManagerContext';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login } = useFileManager();
   const [form, setForm] = useState({ email: '', password: '', remember: false });
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
 
@@ -24,9 +27,16 @@ export default function LoginPage() {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setErrors({});
+    setApiError('');
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1200));
-    router.push('/filemanager/dashboard');
+    try {
+      await login(form.email, form.password);
+      router.push('/filemanager/dashboard');
+    } catch (err) {
+      setApiError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -96,6 +106,13 @@ export default function LoginPage() {
         <div className="fm-auth-form-card">
           <h2 className="fm-auth-form-title">Welcome back 👋</h2>
           <p className="fm-auth-form-sub">Sign in to your StitchCloud account</p>
+
+          {/* API Error */}
+          {apiError && (
+            <div style={{ background: 'rgba(239,68,68,0.08)', border: '1.5px solid #EF4444', color: '#EF4444', borderRadius: 10, padding: '12px 16px', fontSize: 13.5, fontWeight: 600, marginBottom: 12 }}>
+              ⚠ {apiError}
+            </div>
+          )}
 
           {/* Social Buttons */}
           <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>

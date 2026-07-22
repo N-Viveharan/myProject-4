@@ -6,7 +6,10 @@ import { useFileManager } from '../../_context/FileManagerContext';
 const LANGUAGES = ['English', 'Spanish', 'French', 'German', 'Japanese', 'Portuguese'];
 
 export default function ProfilePage() {
-  const { user, updateUser } = useFileManager();
+  const { user, updateUser, loading } = useFileManager();
+
+  // Wait for auth bootstrap
+  if (loading || !user) return null;
 
   const [tab, setTab]         = useState('profile'); // 'profile' | 'password' | 'settings' | 'danger'
   const [profile, setProfile] = useState({ name: user.name, email: user.email, bio: user.bio || '' });
@@ -21,13 +24,30 @@ export default function ProfilePage() {
 
   async function save(section) {
     setSaving(true);
-    await new Promise(r => setTimeout(r, 900));
-    if (section === 'profile') {
-      updateUser({ name: profile.name, email: profile.email, bio: profile.bio, initials: profile.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() });
+    try {
+      if (section === 'profile') {
+        await updateUser({
+          name: profile.name.trim(),
+          bio: profile.bio,
+        });
+      } else if (section === 'settings') {
+        await updateUser({
+          language: settings.language,
+          notifications: {
+            email:   settings.email,
+            uploads: settings.uploads,
+            shared:  settings.shared,
+          },
+        });
+      }
+      // Password change would call a dedicated endpoint — stub for now
+    } catch (err) {
+      console.error('Save error:', err);
+    } finally {
+      setSaving(false);
+      setSaved(section);
+      setTimeout(() => setSaved(''), 3000);
     }
-    setSaving(false);
-    setSaved(section);
-    setTimeout(() => setSaved(''), 3000);
   }
 
   const TABS = [

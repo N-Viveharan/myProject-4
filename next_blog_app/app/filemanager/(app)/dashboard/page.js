@@ -5,7 +5,9 @@ import StatCard from '../../_components/StatCard';
 import { useFileManager, formatSize, formatDate, getFileType } from '../../_context/FileManagerContext';
 
 export default function DashboardPage() {
-  const { user, folders, totalFiles, totalSizeBytes, recentUploads, starredFolders } = useFileManager();
+  const { user, folders, totalFiles, totalSizeBytes, recentUploads, starredFolders, loading } = useFileManager();
+
+  if (loading || !user) return null;
 
   const storagePercent = Math.round((user.storageUsed / user.storageTotal) * 100);
 

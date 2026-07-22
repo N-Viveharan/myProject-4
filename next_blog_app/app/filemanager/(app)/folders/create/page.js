@@ -35,9 +35,13 @@ export default function CreateFolderPage() {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setSaving(true);
-    await new Promise(r => setTimeout(r, 800));
-    const folder = createFolder(form);
-    router.push(`/filemanager/folders/${folder.id}`);
+    try {
+      const folder = await createFolder(form);
+      router.push(`/filemanager/folders/${folder.id}`);
+    } catch (err) {
+      console.error('Create folder error:', err);
+      setSaving(false);
+    }
   }
 
   return (
